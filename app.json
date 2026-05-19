@@ -16,9 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Used to scan barcodes for grocery items.",
-        "NSLocationWhenInUseUsageDescription": "Used to calculate the best shopping route.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Used to calculate the best shopping route."
+        "NSCameraUsageDescription": "Used to scan barcodes for grocery items."
       }
     },
     "android": {
@@ -26,7 +24,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION"]
+      "permissions": ["CAMERA"]
     },
     "web": {
       "bundler": "metro",
@@ -40,10 +38,6 @@
       [
         "expo-camera",
         { "cameraPermission": "Used to scan barcodes for grocery items." }
-      ],
-      [
-        "expo-location",
-        { "locationWhenInUsePermission": "Used to calculate the best shopping route." }
       ],
       [
         "expo-notifications",

@@ -9,20 +9,17 @@ interface Props {
   onToggle: (id: string, isDone: boolean) => void;
   onUpdate: (id: string, price: number | null, location: string | null, lat: number | null, lng: number | null) => void;
   onDelete: (id: string) => void;
-  onLocationPickRequest: (itemId: string, current: { lat: number; lng: number; label: string } | null) => void;
 }
 
-export function GroceryItemRow({ item, onToggle, onUpdate, onDelete, onLocationPickRequest }: Props) {
+export function GroceryItemRow({ item, onToggle, onUpdate, onDelete }: Props) {
   const { formatPrice } = useCurrency();
   const [editing, setEditing] = useState(false);
   const [editPrice, setEditPrice] = useState(item.price != null ? String(item.price) : '');
   const [editLocation, setEditLocation] = useState(item.location ?? '');
-  const [editLat, setEditLat] = useState<number | null>(item.lat);
-  const [editLng, setEditLng] = useState<number | null>(item.lng);
 
   function handleSave() {
     const parsedPrice = editPrice.trim() ? parseFloat(editPrice.trim()) : null;
-    onUpdate(item.id, parsedPrice, editLocation.trim() || null, editLat, editLng);
+    onUpdate(item.id, parsedPrice, editLocation.trim() || null, null, null);
     setEditing(false);
   }
 
@@ -31,21 +28,6 @@ export function GroceryItemRow({ item, onToggle, onUpdate, onDelete, onLocationP
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => onDelete(item.id) },
     ]);
-  }
-
-  function handleMapPress() {
-    const current = editLat != null && editLng != null
-      ? { lat: editLat, lng: editLng, label: editLocation }
-      : null;
-    setEditing(false);
-    setTimeout(() => onLocationPickRequest(item.id, current), 350);
-  }
-
-  // Called by parent after location is picked for this item
-  function applyLocation(label: string, lat: number, lng: number) {
-    setEditLocation(label);
-    setEditLat(lat);
-    setEditLng(lng);
   }
 
   return (
@@ -83,18 +65,12 @@ export function GroceryItemRow({ item, onToggle, onUpdate, onDelete, onLocationP
               keyboardType="decimal-pad"
             />
             <Text style={styles.editLabel}>Location</Text>
-            <View style={styles.locationRow}>
-              <TextInput
-                style={[styles.editInput, { flex: 1 }]}
-                placeholder="Store / aisle"
-                value={editLocation}
-                onChangeText={(v) => { setEditLocation(v); setEditLat(null); setEditLng(null); }}
-              />
-              <TouchableOpacity style={styles.mapBtn} onPress={handleMapPress}>
-                <Text>📍</Text>
-              </TouchableOpacity>
-            </View>
-            {editLat != null && <Text style={styles.coordHint}>📌 {editLocation}</Text>}
+            <TextInput
+              style={styles.editInput}
+              placeholder="Store / aisle"
+              value={editLocation}
+              onChangeText={setEditLocation}
+            />
           </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
@@ -141,7 +117,4 @@ const styles = StyleSheet.create({
   editBody: { padding: 20, backgroundColor: Colors.background, flexGrow: 1 },
   editLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: 6, marginTop: 12 },
   editInput: { backgroundColor: Colors.card, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.text },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  mapBtn: { backgroundColor: Colors.card, borderRadius: 10, padding: 14 },
-  coordHint: { fontSize: 12, color: Colors.textSecondary, marginTop: 6 },
 });

@@ -14,53 +14,28 @@ export interface ItemData {
   lng: number | null;
 }
 
-export interface AddItemModalHandle {
-  applyBarcode: (barcode: string, name: string, price: number | null, location: string | null, lat: number | null, lng: number | null) => void;
-  applyLocation: (label: string, lat: number, lng: number) => void;
-}
-
 interface Props {
   visible: boolean;
   onAdd: (item: ItemData) => void;
   onClose: () => void;
   onScanRequest: () => void;
-  onLocationPickRequest: (current: { lat: number; lng: number; label: string } | null) => void;
-  // Parent passes these back after scan/pick completes
   pendingBarcode?: { code: string; name: string; price: number | null; location: string | null; lat: number | null; lng: number | null } | null;
-  pendingLocation?: { label: string; lat: number; lng: number } | null;
 }
 
-export function AddItemModal({
-  visible, onAdd, onClose, onScanRequest, onLocationPickRequest,
-  pendingBarcode, pendingLocation,
-}: Props) {
+export function AddItemModal({ visible, onAdd, onClose, onScanRequest, pendingBarcode }: Props) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
   const [barcode, setBarcode] = useState<string | null>(null);
 
-  // Apply barcode lookup result from parent (no visible guard — parent sets this before re-opening)
   useEffect(() => {
     if (pendingBarcode) {
       setBarcode(pendingBarcode.code);
       setName(pendingBarcode.name);
       setPrice(pendingBarcode.price != null ? String(pendingBarcode.price) : '');
       setLocation(pendingBarcode.location ?? '');
-      setLat(pendingBarcode.lat ?? null);
-      setLng(pendingBarcode.lng ?? null);
     }
   }, [pendingBarcode]);
-
-  // Apply location pick result from parent (no visible guard — parent sets this before re-opening)
-  useEffect(() => {
-    if (pendingLocation) {
-      setLocation(pendingLocation.label);
-      setLat(pendingLocation.lat);
-      setLng(pendingLocation.lng);
-    }
-  }, [pendingLocation]);
 
   function handleAdd() {
     const trimmedName = name.trim();
@@ -70,8 +45,8 @@ export function AddItemModal({
       barcode,
       price: price.trim() ? parseFloat(price.trim()) : null,
       location: location.trim() || null,
-      lat,
-      lng,
+      lat: null,
+      lng: null,
     });
   }
 
@@ -105,21 +80,13 @@ export function AddItemModal({
             returnKeyType="next"
           />
           <Text style={styles.label}>Location (optional)</Text>
-          <View style={styles.locationRow}>
-            <TextInput
-              style={[styles.input, styles.locationInput]}
-              placeholder="e.g. Walmart Aisle 3"
-              value={location}
-              onChangeText={(v) => { setLocation(v); setLat(null); setLng(null); }}
-              returnKeyType="done"
-            />
-            <TouchableOpacity
-              style={styles.mapBtn}
-              onPress={() => onLocationPickRequest(lat != null && lng != null ? { lat, lng, label: location } : null)}
-            >
-              <Text style={styles.mapBtnText}>📍 Map</Text>
-            </TouchableOpacity>
-          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Walmart Aisle 3"
+            value={location}
+            onChangeText={setLocation}
+            returnKeyType="done"
+          />
           {barcode ? <Text style={styles.barcodeHint}>Barcode: {barcode}</Text> : null}
           <TouchableOpacity style={styles.scanBtn} onPress={onScanRequest}>
             <Text style={styles.scanBtnText}>📷  Scan Barcode</Text>
@@ -149,10 +116,6 @@ const styles = StyleSheet.create({
   body: { padding: 20, backgroundColor: Colors.background, flexGrow: 1 },
   label: { fontSize: 13, color: Colors.textSecondary, marginBottom: 6, marginTop: 12 },
   input: { backgroundColor: Colors.card, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.text },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  locationInput: { flex: 1 },
-  mapBtn: { backgroundColor: Colors.card, borderRadius: 10, padding: 14 },
-  mapBtnText: { fontSize: 14 },
   barcodeHint: { fontSize: 12, color: Colors.textSecondary, marginTop: 8 },
   scanBtn: {
     marginTop: 24,
